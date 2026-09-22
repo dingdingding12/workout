@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>肌力循環訓練</title>
+<style>
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F3F1EC;
+    --ink:#1B1D22; --ink-2:#5B5E66; --ink-3:#9A9CA3;
+    --line:#E7E4DC; --line-2:#DAD6CC;
+    --done:#1F9D57; --done-soft:#E7F5EC;
+    --accent:#1B1D22; --accent-ink:#FBFAF7;
+    --lower:#3B6FD8; --upper:#0E9AA7; --cardio:#E0791B; --core:#7C4DD1; --aerobic:#C94F6D;
+    --shadow:0 1px 2px rgba(20,20,25,.05), 0 8px 24px rgba(20,20,25,.06);
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#131417; --surface:#1C1E23; --surface-2:#24262C;
+      --ink:#ECEBE7; --ink-2:#A7A9B0; --ink-3:#6E7178;
+      --line:#2C2F35; --line-2:#3A3D44;
+      --done:#3FBE76; --done-soft:#17301F;
+      --accent:#ECEBE7; --accent-ink:#131417;
+      --lower:#6C97E8; --upper:#3ABECB; --cardio:#F0983F; --core:#A07EE0; --aerobic:#E27B95;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#131417; --surface:#1C1E23; --surface-2:#24262C;
+    --ink:#ECEBE7; --ink-2:#A7A9B0; --ink-3:#6E7178;
+    --line:#2C2F35; --line-2:#3A3D44;
+    --done:#3FBE76; --done-soft:#17301F;
+    --accent:#ECEBE7; --accent-ink:#131417;
+    --lower:#6C97E8; --upper:#3ABECB; --cardio:#F0983F; --core:#A07EE0; --aerobic:#E27B95;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    font-variant-numeric:tabular-nums;
+  }
+  .wrap{max-width:580px; margin:0 auto; padding:20px 16px 44px}
+
+  header{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:18px}
+  .date-block .kicker{font-size:12px; letter-spacing:.04em; color:var(--ink-3); margin-bottom:2px}
+  .date-block .date{font-size:29px; font-weight:800; letter-spacing:-.01em; line-height:1.05}
+  .week-stat{text-align:right; flex-shrink:0}
+  .week-stat .num{font-size:29px; font-weight:800; line-height:1; color:var(--done)}
+  .week-stat .lbl{font-size:12px; color:var(--ink-2); margin-top:2px}
+  .theme-btn{background:none; border:1px solid var(--line-2); color:var(--ink-2);
+    width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:16px;
+    display:grid; place-items:center; flex-shrink:0; margin-left:2px}
+  .theme-btn:hover{background:var(--surface-2)}
+
+  .weekstrip{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:12px 10px; box-shadow:var(--shadow); margin-bottom:10px}
+  .daycol{text-align:center}
+  .daycol .dow{font-size:12px; color:var(--ink-2); margin-bottom:6px; font-weight:600}
+  .daycol .dnum{font-size:14px; font-weight:700; height:30px; width:30px; margin:0 auto 6px;
+    display:grid; place-items:center; border-radius:9px; color:var(--ink)}
+  .daycol.today .dow{color:var(--ink)}
+  .daycol.today .dnum{background:var(--accent); color:var(--accent-ink)}
+  .dot{width:7px; height:7px; border-radius:99px; background:var(--done); margin:0 auto; opacity:0}
+  .dot.on{opacity:1}
+  .weeksum{font-size:12.5px; color:var(--ink-2); text-align:center; margin:0 0 24px}
+  .weeksum b{color:var(--ink); font-weight:700}
+
+  .todaybar{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin:0 0 16px}
+  .todaybar .big{font-size:16px; font-weight:800}
+  .todaybar .mini{font-size:13px; color:var(--ink-2)}
+
+  .cat{margin-bottom:20px}
+  .cat-head{display:flex; align-items:center; gap:8px; margin:0 0 11px}
+  .cat-dot{width:11px; height:11px; border-radius:4px; background:var(--c); flex-shrink:0}
+  .cat-label{font-size:16px; font-weight:800}
+  .cat-count{font-size:13px; color:var(--ink-2); font-weight:600}
+  .chipwrap{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{position:relative; border:1.5px solid var(--line-2); background:var(--surface); border-radius:12px;
+    padding:10px 14px; font-size:14.5px; font-weight:600; color:var(--ink);
+    cursor:pointer; transition:transform .07s, background .12s, border-color .12s, color .12s;
+    user-select:none; line-height:1.2}
+  .chip:active{transform:scale(.95)}
+  .chip.on{background:var(--c); border-color:var(--c); color:#fff}
+  .chip[data-move].on::before{content:"✓ "; font-weight:800}
+  .chip.add{border-style:dashed; color:var(--ink-2); font-weight:700; font-family:inherit}
+  .chip.add:hover{color:var(--ink); border-color:var(--ink-3)}
+  .chip.custom{padding-right:30px}
+  .chip-del{position:absolute; top:50%; right:7px; transform:translateY(-50%);
+    width:19px; height:19px; border-radius:50%; display:grid; place-items:center;
+    font-size:14px; line-height:1; cursor:pointer; background:var(--surface-2); color:var(--ink-3)}
+  .chip.custom.on .chip-del{background:rgba(255,255,255,.28); color:#fff}
+  .chip-del:hover{background:var(--ink-3); color:var(--surface)}
+
+  .add-box{display:inline-flex; align-items:center; gap:6px}
+  .add-input{padding:10px 12px; border:1.5px solid var(--c); border-radius:12px;
+    background:var(--surface); color:var(--ink); font-family:inherit; font-size:14.5px; font-weight:600; width:118px}
+  .add-input:focus{outline:none}
+  .add-ok{border:none; background:var(--c); color:#fff; border-radius:11px; padding:10px 13px;
+    font-weight:800; cursor:pointer; font-family:inherit; font-size:14px}
+  .add-cancel{border:none; background:none; color:var(--ink-3); font-family:inherit; font-size:13px; cursor:pointer; padding:6px}
+
+  /* 距離 / 間歇 / 運動時間 明細面板 */
+  .detail{margin-top:10px; padding:13px 14px; border:1.5px solid var(--c); border-radius:13px;
+    background:color-mix(in srgb, var(--c) 7%, transparent)}
+  .detail-name{font-size:14.5px; font-weight:800; margin-bottom:9px; color:var(--c)}
+  .seg{display:inline-flex; border:1.5px solid var(--line-2); border-radius:10px; overflow:hidden; margin-bottom:11px}
+  .seg button{border:none; background:var(--surface); color:var(--ink-2); font-family:inherit;
+    font-size:13.5px; font-weight:700; padding:8px 18px; cursor:pointer; transition:background .12s,color .12s}
+  .seg button + button{border-left:1.5px solid var(--line-2)}
+  .seg button.on{background:var(--c); color:#fff}
+  .fields{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+  .field{display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:var(--ink-2); font-weight:600}
+  .field input{width:66px; padding:9px 8px; border:1.5px solid var(--line-2); border-radius:10px;
+    background:var(--surface); color:var(--ink); font-family:inherit; font-size:15px; font-weight:700;
+    text-align:center; -moz-appearance:textfield}
+  .field input::-webkit-outer-spin-button,.field input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+  .field input:focus{outline:none; border-color:var(--c)}
+
+  .actions{position:sticky; bottom:0; padding:14px 0 4px;
+    background:linear-gradient(to top, var(--bg) 72%, transparent); margin-top:6px}
+  .record{width:100%; border:none; border-radius:14px; padding:16px; cursor:pointer;
+    font-size:16px; font-weight:800; font-family:inherit;
+    background:var(--accent); color:var(--accent-ink); transition:transform .08s, opacity .12s}
+  .record:active{transform:scale(.985)}
+  .record:disabled{opacity:.4; cursor:not-allowed}
+  .clear-link{display:block; width:100%; text-align:center; margin-top:8px; background:none; border:none;
+    color:var(--ink-3); font-size:13px; font-family:inherit; cursor:pointer; padding:4px}
+  .clear-link:hover{color:var(--ink-2); text-decoration:underline}
+
+  .recent{margin-top:30px}
+  .sec-title{font-size:15px; font-weight:700; margin:0 0 12px}
+  .log{list-style:none; margin:0; padding:0}
+  .log li{display:flex; align-items:flex-start; gap:12px; padding:13px 4px; border-bottom:1px solid var(--line)}
+  .log .ldate{font-size:14px; font-weight:700; width:74px; flex-shrink:0; padding-top:1px}
+  .log .litems{flex:1; font-size:13.5px; color:var(--ink-2); line-height:1.55}
+  .log .ldel{background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:18px;
+    width:30px; height:30px; border-radius:8px; flex-shrink:0}
+  .log .ldel:hover{background:var(--surface-2); color:var(--ink)}
+  .empty{color:var(--ink-3); font-size:14px; padding:14px 4px}
+
+  .toast{position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-50%) translateY(16px); opacity:0; pointer-events:none;
+    background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:12px;
+    font-size:14px; font-weight:700; box-shadow:0 8px 30px rgba(0,0,0,.25);
+    transition:opacity .2s, transform .2s; z-index:50; max-width:90vw; text-align:center}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="date-block">
+      <div class="kicker">肌力循環訓練</div>
+      <div class="date" id="today-date">—</div>
+    </div>
+    <div class="week-stat">
+      <div class="num" id="week-count">0</div>
+      <div class="lbl">本週訓練</div>
+    </div>
+    <button class="theme-btn" id="theme-toggle" aria-label="切換深淺色">◐</button>
+  </header>
+
+  <div class="weekstrip" id="weekstrip"></div>
+  <p class="weeksum" id="weeksum"></p>
+
+  <div class="todaybar">
+    <span class="big" id="today-total">今天：尚未勾選</span>
+    <span class="mini" id="today-mini"></span>
+  </div>
+
+  <div id="cats"></div>
+
+  <div class="recent">
+    <h2 class="sec-title">最近紀錄</h2>
+    <ul class="log" id="log"></ul>
+  </div>
+</div>
+
+<div class="actions">
+  <div class="wrap" style="padding-top:0;padding-bottom:0">
+    <button class="record" id="record-btn" disabled>記錄今日訓練</button>
+    <button class="clear-link" id="clear-btn">清除今日勾選</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------- 動作清單（依部位；有氧放最後） ---------- */
+const CATS=[
+  {key:"lower",  label:"下肢", cvar:"var(--lower)",
+   moves:["深蹲","分腿蹲","弓箭步","壺鈴擺盪","藥球","側蹲","螃蟹走"]},
+  {key:"upper",  label:"上肢", cvar:"var(--upper)",
+   moves:["背拉","肩推","肩推+火箭","引體向上","伏地挺身","平板划船+硬舉"]},
+  {key:"cardio", label:"心肺", cvar:"var(--cardio)",
+   moves:["登山者","開合跳","波比跳","藥球弓步抬腿+轉體"]},
+  {key:"core",   label:"核心", cvar:"var(--core)",
+   moves:["仰臥抬腿","死蟲","棒式","無"]},
+  {key:"aerobic",label:"有氧", cvar:"var(--aerobic)",
+   moves:["划船","滑雪","跑步機爬坡","橢圓機"]},
+];
+const CAT_BY_KEY={}; CATS.forEach(c=>CAT_BY_KEY[c.key]=c);
+const CAT_INDEX={}; CATS.forEach((c,i)=>CAT_INDEX[c.key]=i);
+/* 有明細輸入的動作：distint=距離/間歇，duration=運動時間 */
+const DETAIL={
+  "aerobic|划船":"distint",
+  "aerobic|滑雪":"distint",
+  "aerobic|跑步機爬坡":"duration",
+  "aerobic|橢圓機":"duration",
+};
+const DOW=["日","一","二","三","四","五","六"];
+
+/* ---------- 儲存 ---------- */
+const K_SESS="ding-workout-v2-sessions", K_DRAFT="ding-workout-v2-draft",
+      K_THEME="ding-workout-v2-theme", K_CUSTOM="ding-workout-v2-custom";
+function load(key,fb){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fb;}catch(e){return fb;}}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+
+/* ---------- 日期 ---------- */
+function iso(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),da=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${da}`;}
+function mondayOf(d){const x=new Date(d);const day=x.getDay();x.setHours(0,0,0,0);x.setDate(x.getDate()+(day===0?-6:1-day));return x;}
+
+/* ---------- 狀態 ---------- */
+const now=new Date(), TODAY=iso(now);
+let sessions=load(K_SESS,[]);
+let draft=load(K_DRAFT,{date:TODAY,checks:{}});
+if(draft.date!==TODAY){draft={date:TODAY,checks:{}};save(K_DRAFT,draft);}
+let custom=load(K_CUSTOM,{});
+let theme=load(K_THEME,null);
+if(theme)document.documentElement.setAttribute("data-theme",theme);
+let addingCat=null;
+
+const $=(id)=>document.getElementById(id);
+const keyOf=(cat,name)=>cat+"|"+name;
+const movesOf=(cat)=>CAT_BY_KEY[cat].moves.concat(custom[cat]||[]);
+
+/* 明細動作顯示名稱：沒填完 → 當一般勾選（不顯示問號） */
+function labelFromVal(move,v){
+  if(v&&typeof v==="object"){
+    if(v.mode==="interval")
+      return (v.work&&v.rest&&v.sets)?`${move}（間歇 ${v.work}-${v.rest}秒 ×${v.sets}組）`:move;
+    if(v.mode==="duration")
+      return v.minutes?`${move}（${v.minutes}分鐘）`:move;
+    return v.distance?`${move}（${v.distance}公尺）`:move; // distance
+  }
+  return move;
+}
+
+/* ---------- 渲染 ---------- */
+function renderHeader(){
+  $("today-date").textContent=`${now.getMonth()+1} 月 ${now.getDate()} 日 ・ 週${DOW[now.getDay()]}`;
+  const mon=mondayOf(now), sun=new Date(mon); sun.setDate(sun.getDate()+7);
+  const wk=sessions.filter(s=>{const t=new Date(s.date+"T00:00:00");return t>=mon&&t<sun;});
+  $("week-count").textContent=wk.length;
+  const tally={}; CATS.forEach(c=>tally[c.key]=0);
+  wk.forEach(s=>s.items.forEach(it=>{if(tally[it.cat]!=null)tally[it.cat]++;}));
+  $("weeksum").innerHTML= wk.length
+    ? "本週動作"+CATS.map(c=>`　${c.label} <b>${tally[c.key]}</b>`).join("")
+    : "本週還沒有訓練紀錄";
+}
+
+function renderWeek(){
+  const mon=mondayOf(now), el=$("weekstrip"); el.innerHTML="";
+  for(let i=0;i<7;i++){
+    const d=new Date(mon); d.setDate(d.getDate()+i); const di=iso(d);
+    const trained=sessions.some(s=>s.date===di);
+    const col=document.createElement("div");
+    col.className="daycol"+(di===TODAY?" today":"");
+    col.innerHTML=`<div class="dow">${DOW[(i+1)%7]}</div>
+      <div class="dnum">${d.getDate()}</div>
+      <div class="dot${trained?" on":""}"></div>`;
+    el.appendChild(col);
+  }
+}
+
+function renderCats(){
+  const wrap=$("cats"); wrap.innerHTML="";
+  CATS.forEach(cat=>{
+    const all=movesOf(cat.key);
+    const cust=custom[cat.key]||[];
+    const sec=document.createElement("section");
+    sec.className="cat"; sec.style.setProperty("--c",cat.cvar);
+    const n=all.filter(m=>draft.checks[keyOf(cat.key,m)]).length;
+    const chips=all.map(m=>{
+      const on=!!draft.checks[keyOf(cat.key,m)];
+      const isC=cust.includes(m);
+      return `<div class="chip${on?' on':''}${isC?' custom':''}" data-cat="${cat.key}" data-move="${m}">${m}${isC?'<span class="chip-del" data-del="1">×</span>':''}</div>`;
+    }).join("");
+    const addCtl = addingCat===cat.key
+      ? `<span class="add-box">
+           <input class="add-input" data-cat="${cat.key}" placeholder="動作名稱" autocomplete="off">
+           <button class="add-ok" data-cat="${cat.key}">加入</button>
+           <button class="add-cancel">取消</button>
+         </span>`
+      : `<button class="chip add" data-add="${cat.key}">＋ 新增</button>`;
+    // 明細面板
+    let panels="";
+    all.forEach(m=>{
+      const k=keyOf(cat.key,m), v=draft.checks[k], type=DETAIL[k];
+      if(!type||!v||typeof v!=="object")return;
+      if(type==="distint"){
+        const dist=v.mode!=="interval";
+        const fields = dist
+          ? `<span class="field"><input type="number" inputmode="numeric" data-f="distance" value="${v.distance||''}" placeholder="0"> 公尺</span>`
+          : `<span class="field">運動 <input type="number" inputmode="numeric" data-f="work" value="${v.work||''}" placeholder="0"> 秒</span>
+             <span class="field">休息 <input type="number" inputmode="numeric" data-f="rest" value="${v.rest||''}" placeholder="0"> 秒</span>
+             <span class="field">組數 <input type="number" inputmode="numeric" data-f="sets" value="${v.sets||''}" placeholder="0"></span>`;
+        panels+=`<div class="detail" data-key="${k}">
+          <div class="detail-name">${m}</div>
+          <div class="seg">
+            <button data-mode="distance" class="${dist?'on':''}">距離</button>
+            <button data-mode="interval" class="${dist?'':'on'}">間歇</button>
+          </div>
+          <div class="fields">${fields}</div>
+        </div>`;
+      }else if(type==="duration"){
+        panels+=`<div class="detail" data-key="${k}">
+          <div class="detail-name">${m}</div>
+          <div class="fields"><span class="field">運動時間 <input type="number" inputmode="numeric" data-f="minutes" value="${v.minutes||''}" placeholder="0"> 分鐘</span></div>
+        </div>`;
+      }
+    });
+    sec.innerHTML=`
+      <div class="cat-head">
+        <span class="cat-dot"></span>
+        <span class="cat-label">${cat.label}</span>
+        <span class="cat-count">${n>0?"已選 "+n:""}</span>
+      </div>
+      <div class="chipwrap">${chips}${addCtl}</div>
+      ${panels}`;
+    wrap.appendChild(sec);
+  });
+
+  // 綁定
+  wrap.querySelectorAll(".chip[data-move]").forEach(ch=>ch.onclick=(e)=>{
+    if(e.target.dataset.del){ delCustom(ch.dataset.cat,ch.dataset.move); return; }
+    toggle(ch.dataset.cat,ch.dataset.move);
+  });
+  wrap.querySelectorAll(".chip.add").forEach(b=>b.onclick=()=>{addingCat=b.dataset.add; renderCats();});
+  wrap.querySelectorAll(".add-ok").forEach(b=>b.onclick=()=>doAdd(b.dataset.cat));
+  wrap.querySelectorAll(".add-cancel").forEach(b=>b.onclick=()=>{addingCat=null; renderCats();});
+  wrap.querySelectorAll(".add-input").forEach(inp=>inp.onkeydown=(e)=>{
+    if(e.key==="Enter")doAdd(inp.dataset.cat);
+    else if(e.key==="Escape"){addingCat=null; renderCats();}
+  });
+  wrap.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{
+    const key=b.closest(".detail").dataset.key;
+    if(draft.checks[key]&&typeof draft.checks[key]==="object"){
+      draft.checks[key].mode=b.dataset.mode; save(K_DRAFT,draft); renderCats();
+    }
+  });
+  wrap.querySelectorAll(".detail input").forEach(inp=>inp.oninput=()=>{
+    const key=inp.closest(".detail").dataset.key, obj=draft.checks[key];
+    if(obj&&typeof obj==="object"){ obj[inp.dataset.f]=inp.value; save(K_DRAFT,draft); }
+  });
+
+  if(addingCat){ const i=wrap.querySelector(".add-input"); if(i)i.focus(); }
+  renderSummary();
+}
+
+function renderSummary(){
+  const counts={}; CATS.forEach(c=>counts[c.key]=0); let total=0;
+  Object.keys(draft.checks).forEach(k=>{const cat=k.split("|")[0]; if(counts[cat]!=null){counts[cat]++;total++;}});
+  $("today-total").textContent=total?`今天已選 ${total} 個動作`:"今天：尚未勾選";
+  const parts=[]; CATS.forEach(c=>{if(counts[c.key])parts.push(c.label+" "+counts[c.key]);});
+  $("today-mini").textContent=parts.length?"・ "+parts.join("　"):"";
+  $("record-btn").disabled=total===0;
+}
+
+function renderLog(){
+  const ul=$("log"); ul.innerHTML="";
+  const sorted=[...sessions].sort((a,b)=>b.ts-a.ts).slice(0,15);
+  if(!sorted.length){ul.innerHTML=`<li class="empty">還沒有紀錄，完成第一次訓練後會出現在這裡</li>`;return;}
+  sorted.forEach(s=>{
+    const d=new Date(s.date+"T00:00:00");
+    const li=document.createElement("li");
+    li.innerHTML=`
+      <span class="ldate">${d.getMonth()+1}/${d.getDate()} 週${DOW[d.getDay()]}</span>
+      <span class="litems">${s.items.map(it=>it.name).join("、")}</span>
+      <button class="ldel" aria-label="刪除">×</button>`;
+    li.querySelector(".ldel").onclick=()=>delSession(s.id);
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- 動作 ---------- */
+function toggle(cat,move){
+  const k=keyOf(cat,move);
+  if(draft.checks[k]){delete draft.checks[k];}
+  else{
+    const t=DETAIL[k];
+    draft.checks[k]= t==="distint" ? {mode:"distance",distance:"",work:"",rest:"",sets:""}
+                   : t==="duration" ? {mode:"duration",minutes:""}
+                   : 1;
+  }
+  save(K_DRAFT,draft); renderCats();
+}
+
+function doAdd(cat){
+  const inp=$("cats").querySelector('.add-input[data-cat="'+cat+'"]'); if(!inp)return;
+  const name=inp.value.trim();
+  if(!name){addingCat=null; renderCats(); return;}
+  if(CAT_BY_KEY[cat].moves.includes(name)||(custom[cat]||[]).includes(name)){toast("已經有這個動作了"); return;}
+  custom[cat]=(custom[cat]||[]).concat([name]); save(K_CUSTOM,custom);
+  addingCat=null; renderCats(); toast(`已新增「${name}」`);
+}
+
+function delCustom(cat,move){
+  custom[cat]=(custom[cat]||[]).filter(x=>x!==move); save(K_CUSTOM,custom);
+  delete draft.checks[keyOf(cat,move)]; save(K_DRAFT,draft);
+  renderCats(); toast(`已移除「${move}」`);
+}
+
+function record(){
+  const items=Object.keys(draft.checks).map(k=>{
+    const idx=k.indexOf("|"), cat=k.slice(0,idx), name=k.slice(idx+1);
+    return {cat,name:labelFromVal(name,draft.checks[k])};
+  });
+  if(!items.length)return;
+  items.sort((a,b)=>CAT_INDEX[a.cat]-CAT_INDEX[b.cat]);
+  sessions.push({id:"s"+Date.now(),date:TODAY,ts:Date.now(),items});
+  save(K_SESS,sessions);
+  draft={date:TODAY,checks:{}}; save(K_DRAFT,draft);
+  renderHeader(); renderWeek(); renderCats(); renderLog();
+  toast(`已記錄今日訓練 ・ ${items.length} 個動作`);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function delSession(id){
+  sessions=sessions.filter(s=>s.id!==id); save(K_SESS,sessions);
+  renderHeader(); renderWeek(); renderLog(); toast("已刪除該筆紀錄");
+}
+function clearDraft(){draft={date:TODAY,checks:{}};save(K_DRAFT,draft);renderCats();}
+
+let tt=null;
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* ---------- 綁定 ---------- */
+$("record-btn").onclick=record;
+$("clear-btn").onclick=clearDraft;
+$("theme-toggle").onclick=()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  const isDark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  const next=isDark?"light":"dark";
+  document.documentElement.setAttribute("data-theme",next); save(K_THEME,next);
+};
+
+/* ---------- 啟動 ---------- */
+renderHeader(); renderWeek(); renderCats(); renderLog();
+</script>
+</body>
+</html>
